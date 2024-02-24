@@ -1,0 +1,16 @@
+Easy to setup simulation thing
+entities are placed in the world by the player
+  can be placed whenever
+entities (when not in the world) are represented as cards
+
+
+
+World generation:
+- each set of 16x16 pixels is a "chunk"
+- each chunk:
+  - has a biome
+  - has a temperature
+  - has a texture
+- chunks are typically grouped in set of 50 as "areas"
+- each area:
+  - has 
