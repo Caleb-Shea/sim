@@ -20,8 +20,10 @@ class World():
         self.cell_size = 10
         self.default_cell_size = self.cell_size
 
-        self.cam_x = 0
-        self.cam_y = 0
+        self.pan_border = 2 * self.default_cell_size
+
+        self.off_x = 0
+        self.off_y = 0
 
         self.areas = []
         self.chunks = []
@@ -115,16 +117,16 @@ class World():
 
         if lvl < self.default_cell_size:
             self.cell_size = self.default_cell_size
-            self.cam_x = 0
-            self.cam_y = 0
+            self.off_x = 0
+            self.off_y = 0
         else:
             amt = lvl - self.cell_size
 
             self.cell_size = lvl
 
             # Update cam values so we zoom based on the middle of the screen
-            self.cam_x -= ((self.WIN_W/2-self.cam_x)/self.cell_size)*amt
-            self.cam_y -= ((self.WIN_H/2-self.cam_y)/self.cell_size)*amt
+            self.off_x += ((self.off_x - self.WIN_W/2)*amt/(self.cell_size-amt))
+            self.off_y += ((self.off_y - self.WIN_H/2)*amt/(self.cell_size-amt))
     
     def zoom(self, amt: int, tgt: tuple) -> None:
         """Zoom in/out, centered on tgt, by the specified amount.
@@ -139,23 +141,43 @@ class World():
             return
 
         # Diff from target to tl corner
-        diff_x = self.cam_x - tgt[0]
-        diff_y = self.cam_y - tgt[1]
+        diff_x = self.off_x - tgt[0]
+        diff_y = self.off_y - tgt[1]
 
         # Scale diff based on amt
         diff_x = (diff_x*amt/(self.cell_size-amt))
         diff_y = (diff_y*amt/(self.cell_size-amt))
 
         # Offset camera
-        self.cam_x += diff_x
-        self.cam_y += diff_y
+        self.off_x += diff_x
+        self.off_y += diff_y
+
+        # Clamp
+        mw = self.cell_size * len(self.heightmap[0])
+        mh = self.cell_size * len(self.heightmap)
+
+        self.off_x = min(self.pan_border, self.off_x)
+        self.off_x = max(self.WIN_W - mw - self.pan_border, self.off_x)
+
+        self.off_y = min(self.pan_border, self.off_y)
+        self.off_y = max(self.WIN_H - mh - self.pan_border, self.off_y)
     
     def pan(self, amt: tuple) -> None:
         """Pan the camera by a given amount."""
 
         # Move camera
-        self.cam_x += amt[0]
-        self.cam_y += amt[1]
+        self.off_x += amt[0]
+        self.off_y += amt[1]
+
+        # Clamp
+        mw = self.cell_size * len(self.heightmap[0])
+        mh = self.cell_size * len(self.heightmap)
+
+        self.off_x = min(self.pan_border, self.off_x)
+        self.off_x = max(self.WIN_W - mw - self.pan_border, self.off_x)
+
+        self.off_y = min(self.pan_border, self.off_y)
+        self.off_y = max(self.WIN_H - mh - self.pan_border, self.off_y)
 
     def render(self):
         self.num_cells_rendered = 0
@@ -164,12 +186,12 @@ class World():
             for i, val in enumerate(row):
                 
                 # Check if the cell we're about to render is actually on-screen
-                if not (-self.cell_size < i*self.cell_size + self.cam_x < self.WIN_W) \
-                    or not (-self.cell_size < j*self.cell_size + self.cam_y < self.WIN_H):
+                if not (-self.cell_size < i*self.cell_size + self.off_x < self.WIN_W) \
+                    or not (-self.cell_size < j*self.cell_size + self.off_y < self.WIN_H):
                         continue
 
-                r = (i*self.cell_size + self.cam_x,
-                     j*self.cell_size + self.cam_y,
+                r = (i*self.cell_size + self.off_x,
+                     j*self.cell_size + self.off_y,
                      self.cell_size,
                      self.cell_size)
                 pyg.draw.rect(self.window, (val*255, 0, val*255), r)

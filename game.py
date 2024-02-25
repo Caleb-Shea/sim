@@ -98,8 +98,14 @@ class Game():
         a = self.font.render(f"Cells Rendered: {self.world.num_cells_rendered}", True, (0, 0, 0), (255, 255, 255))
         self.window.blit(a, (10, 10))
 
-        a = self.font.render(f"Cam X: {self.world.cam_x}", True, (0, 0, 0), (255, 255, 255))
+        a = self.font.render(f"X offset: {self.world.off_x}", True, (0, 0, 0), (255, 255, 255))
         self.window.blit(a, (10, 30))
+
+        a = self.font.render(f"Y offset: {self.world.off_y}", True, (0, 0, 0), (255, 255, 255))
+        self.window.blit(a, (10, 50))
+
+        a = self.font.render(f"m_pos: {pyg.mouse.get_pos()}", True, (0, 0, 0), (255, 255, 255))
+        self.window.blit(a, (10, 70))
 
     def render(self):
         """Update the window with the current state of the game."""
